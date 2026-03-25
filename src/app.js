@@ -1,45 +1,49 @@
 const express = require('express');
+const noteModel = require('../src/models/note.model');
 
 const app = express();
 
 //  middleware
-const notes = [];
-app.use(express.json())
+app.use(express.json());
 
-
-app.post("/about", (req, res) => {
-    notes.push(req.body);
+app.post("/notes", async (req, res) => {
+    const data = req.body
+    await noteModel.create({
+        title: data.title,
+        description: data.description
+    })
     res.status(201).json({
-        message: "user created",
-        notes
-
+        message: "successful",
     })
 })
 
-app.get("/about", (req, res) => {
+app.get("/notes", async (req, res) => {
+    const note = await noteModel.find() //  find is always return a array so here note is storing a array
+
     res.status(200).json({
-        message: "get data",
-        notes: notes
+        message: "note fechted",
+        note
     })
 })
 
-app.delete('/about/:index', (req, res) => {
-    const index = req.params.index
-    delete notes[index]
+app.patch("/notes/:id", async (req, res) => {
+    const id = req.params.id;
+    const data = req.body.description
+    await noteModel.findOneAndUpdate({ _id: id }, { description: data })
+
     res.status(200).json({
-        message: "user deleted",
-        notes
+        message: "updated"
     })
+
 })
 
-app.patch('/notes/:index', (req, res) => {
-    const index = req.params.index;
-    const ab  = req.body.description;
-    notes[index].description = ab
-    
+app.delete("/notes/:id", async (req, res) => {
+    const id = req.params.id;
+    await noteModel.findByIdAndDelete({
+        _id: id
+    })
     res.status(200).json({
-        message: "updated",
-        notes
+        meassage: "deleted"
     })
 })
 
